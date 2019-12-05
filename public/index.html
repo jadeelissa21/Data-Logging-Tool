@@ -1,0 +1,145 @@
+	<!DOCTYPE html>
+		<html lang="en">
+			    <head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<meta http-equiv="X-UA-Compatible" content="IE=edge">
+					<title>Vue Working schedule</title> 
+					<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+					<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+				</head>
+				<link rel="stylesheet" href="styles.css">
+				<body>
+					<canvas id="chart" width="600" height="300"></canvas>
+<div class="content">
+		<h1>Vue work Schedule</h1>
+		<p1> Above is a data logging tool which displays the amount of hours i have worked.<p1>
+
+</div>
+        <input type="text" id="xDay" value="" oninput="dayChange(this.value)">
+ 
+		    <input type="range" id="xTimein" min="7" max="18" value="5" oninput="sliderChange1(this.value)"> 
+		    <output id="sliderVal1"> </output> <br> 
+		    <button id="submit">submit</button>
+
+		    <input type="range" id="xTimeout" min="6" max="24" value="5" oninput="sliderChange2(this.value)"> 
+		    <output id="sliderVal2"> </output> <br> 
+
+	<script>
+	let xDay; // Create global variable called XDay
+	let xTimein; // Create global variable called XTimein
+	let xTimeout; // Create global variable called XTimeout
+
+		function sliderChange1(val) { // create a function called slider change which will be called out using the name.
+
+	          document.getElementById('sliderVal1').innerHTML = val; // get data from slider and insert it into the database
+	          xTimein= parseInt(val);
+	      }
+
+	      function sliderChange2(val) { // create a function called slider change which will be called out using the name.
+
+	          document.getElementById('sliderVal2').innerHTML = val; // get data from slider and insert it into the database
+	          xTimeout= parseInt(val);
+	      }
+
+	      const buttonSubmit = document.getElementById('submit'); // Create button and call it submit
+	      buttonSubmit.addEventListener('click', async event => { 
+	      	pushD();
+	      	getData();
+	      	myChart.update();
+
+	    });
+
+	function dayChange(value) {   
+    xDay = document.getElementById("xDay").value;
+	}
+
+async function pushD(){ // create function called pushD to hold variables related to the infromation e.g. date.
+        const data = {
+        	Day:xDay, // set data to read the global variable from slider 
+        	In:xTimein, // set data to read the global variable from slider 
+        	Out:xTimeout,}; // set data to read the global variable from slider 
+        console.log('testing'); // if successful console log this text
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        };
+        const response = await fetch('/api', options);
+
+      };
+		
+</script>
+<script>
+
+		let weekArray = [0,0,0,0,0,0,0]; //create weekly array of number of days in the week each 0 is a day of the week.
+		const ctx = document.getElementById('chart').getContext('2d'); // Call chart.js and create bar chart using the values below
+		const myChart = new Chart(ctx, {
+
+		    type: 'bar',
+		    data: {
+		        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday'], // create multiple labels which will highlight what day of the week is displayed in the chart
+		        datasets: [{
+		            label: 'Working hours at Vue',
+		            data: weekArray, // This will display the amount of hours worked on the set day
+		            backgroundColor: [ // collection of RGBA tags which are set to the main colour orange
+		                'rgba(241,188,0, 1)',
+		                'rgba(241,188,0, 1)',
+		                'rgba(241,188,0, 1)',
+		                'rgba(241,188,0, 1)',
+		                'rgba(241,188,0, 1)',
+		                'rgba(241,188,0, 1)',
+		                'rgba(241,188,0, 1)'
+		            ],
+		            borderColor:[
+		                'rgba(255,207,37), 2)',
+		                'rgba(255,207,37), 0)',
+		                'rgba(255,207,37), 1)',
+		                'rgba(255,207,37), 1)',
+		                'rgba(255,207,37), 1)',
+		                'rgba(255,207,37), 1)',
+		                'rgba(255,207,37), 1)'
+		            ],
+		            borderWidth: 1 // set border wdith to width of 1
+		        }]
+		    },
+		    options: {
+		        scales: {
+		            yAxes: [{
+		                ticks: {
+		                    beginAtZero: true
+		                }
+		            }]
+		        }
+		    }
+		});
+    </script>
+		<script>
+
+
+	getData(); // create varible called get data which can be used below 
+			async function getData(){
+		    const response = await fetch('/api'); // fetch local api from the database
+		    const data= await response.json(); // await response from json data
+
+		for(let H = 0; H <weekArray.length; H++){ //a for loop which collects the hours of the day. The length property helps define the number of elements in the html collection
+			console.log("success"); // if successful console log this text
+		    for(let j = 0; j < data.length; j++) {  // if value empty array J is 
+		    	if(data[j].Day == H && data[j].In != "N/A"){ // if amount of time is equal to N/A then record amount of hours as 0
+		    		console.log("success"); // if successful console log this text
+		    		weekArray[H] += ((data[j].Out)-(data[j].In)); // overall hours are held in array, collect data from .out and .in from datbase and minus the largest number with the smallest e.g. Time out - time in to create overall hours to be displayed on chart
+		    		console.log(data[j].Out-data[j].In); // console log result of minus data in and data time out 
+		    		console.log(data[j].In);
+		    		console.log(weekArray); // console log collected data from .notation to the array.
+
+		    	}
+		    }
+		}
+	};
+
+
+							</script>	
+					</body>
+			    </html>
